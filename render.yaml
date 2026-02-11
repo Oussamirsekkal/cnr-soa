@@ -1,0 +1,66 @@
+# Render Blueprint - Deploy all services with one click
+# https://render.com/docs/blueprint-spec
+
+services:
+  # ========================================
+  # SERVICE CNR (Main API - Orchestrator)
+  # ========================================
+  - type: web
+    name: cnr-service
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: soa-postgres
+          property: connectionString
+      - key: ETAT_CIVIL_URL
+        fromService:
+          name: etat-civil-service
+          type: web
+          property: host
+      - key: CNAS_URL
+        fromService:
+          name: cnas-service
+          type: web
+          property: host
+      - key: PORT
+        value: 8000
+    healthCheckPath: /health
+
+  # ========================================
+  # SERVICE ÉTAT CIVIL
+  # ========================================
+  - type: web
+    name: etat-civil-service
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerCommand: uvicorn service_etat_civil:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PORT
+        value: 8001
+    healthCheckPath: /health
+
+  # ========================================
+  # SERVICE CNAS
+  # ========================================
+  - type: web
+    name: cnas-service
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerCommand: uvicorn service_cnas:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PORT
+        value: 8002
+    healthCheckPath: /health
+
+# ========================================
+# BASE DE DONNÉES POSTGRESQL
+# ========================================
+databases:
+  - name: soa-postgres
+    plan: free  # ou starter pour plus de performance
+    databaseName: retraite_db
+    user: postgres
+

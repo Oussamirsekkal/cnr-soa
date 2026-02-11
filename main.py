@@ -16,8 +16,19 @@ from sqlalchemy.orm import sessionmaker, Session, relationship
 
 # --- 1. CONFIGURATION SOA ---
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./test.db")
+
+# Fix for Render: they use 'postgres://' but SQLAlchemy requires 'postgresql://'
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
 ETAT_CIVIL_URL = os.getenv("ETAT_CIVIL_URL", "http://localhost:8001")
 CNAS_URL = os.getenv("CNAS_URL", "http://localhost:8002")
+
+# Add https:// prefix if the URL is just a hostname (from Render service references)
+if ETAT_CIVIL_URL and not ETAT_CIVIL_URL.startswith("http"):
+    ETAT_CIVIL_URL = f"https://{ETAT_CIVIL_URL}"
+if CNAS_URL and not CNAS_URL.startswith("http"):
+    CNAS_URL = f"https://{CNAS_URL}"
 
 connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
 

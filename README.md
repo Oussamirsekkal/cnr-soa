@@ -356,6 +356,106 @@ retraite-db-1       "docker-entrypoint..."   db                  running
 
 ---
 
+## ☁️ Déploiement Cloud (Render)
+
+Ce projet est déployé en production sur **Render.com** avec 3 services séparés.
+
+### 🌐 URLs de Production (Live)
+
+| Service | Swagger Docs | Health Check |
+|---------|--------------|--------------|
+| **CNR (Principal)** | [https://cnr-soa.onrender.com/docs](https://cnr-soa.onrender.com/docs) | [/health](https://cnr-soa.onrender.com/health) |
+| **État Civil** | [https://etat-civil-soa.onrender.com/docs](https://etat-civil-soa.onrender.com/docs) | [/health](https://etat-civil-soa.onrender.com/health) |
+| **CNAS** | [https://cnas-soa.onrender.com/docs](https://cnas-soa.onrender.com/docs) | [/health](https://cnas-soa.onrender.com/health) |
+
+---
+
+## 🔁 Déploiement Cloud LIVE (Render) — Liens et Tests
+
+Vous avez déployé les 3 services sur Render. Voici les URLs de production et les commandes curl (les commandes locales sont gardées plus bas pour référence).
+
+Live URLs:
+- CNR (Principal): https://cnr-soa.onrender.com
+  - Swagger: https://cnr-soa.onrender.com/docs
+  - Health:  https://cnr-soa.onrender.com/health
+
+- État Civil: https://etat-civil-soa.onrender.com
+  - Swagger: https://etat-civil-soa.onrender.com/docs
+  - Health:  https://etat-civil-soa.onrender.com/health
+
+- CNAS: https://cnas-soa.onrender.com
+  - Swagger: https://cnas-soa.onrender.com/docs
+  - Health:  https://cnas-soa.onrender.com/health
+
+
+### LOCAL vs CLOUD (Render) - Diagramme
+
+LOCAL (Docker Compose):
+┌─────────────────────────────────────┐
+│          localhost                  │
+│  ┌─────────┬─────────┬─────────┐   │
+│  │ :8000   │ :8001   │ :8002   │   │
+│  │  CNR    │ ÉtatCiv │  CNAS   │   │
+│  └─────────┴─────────┴─────────┘   │
+└─────────────────────────────────────┘
+
+CLOUD (Render):
+┌─────────────────────────────────────────────────────────────┐
+│                     *.onrender.com                          │
+│  ┌─────────────────┐ ┌─────────────────┐ ┌───────────────┐ │
+│  │ cnr-soa         │ │ etat-civil-soa  │ │ cnas-soa      │ │
+│  │ .onrender.com   │ │ .onrender.com   │ │ .onrender.com │ │
+│  │ (port 443/HTTPS)│ │ (port 443/HTTPS)│ │ (port 443/HTTPS)│ │
+│  └─────────────────┘ └─────────────────┘ └───────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+
+
+### Commandes cURL (Local et Cloud)
+
+Use these commands to test the services locally (Docker Compose) and on Render (Cloud). Keep both sets for convenience.
+
+#### Local (Docker Compose)
+```bash
+# Create a beneficiary (local)
+curl -X POST "http://localhost:8000/beneficiaires/" \
+  -H "Content-Type: application/json" \
+  -d '{"nom_complet": "M. Local Test", "type_simulation": "normal"}'
+
+# Audit a beneficiary (local)
+curl -X GET "http://localhost:8000/beneficiaires/1/audit"
+
+# Health (local)
+curl http://localhost:8000/health
+
+# État Civil verify (local)
+curl http://localhost:8001/verify/25-16-12345-00
+
+# CNAS employment (local)
+curl http://localhost:8002/employment/25-16-12345-99
+```
+
+#### Cloud (Render)
+```bash
+# Create a beneficiary (Render)
+curl -X POST "https://cnr-soa.onrender.com/beneficiaires/" \
+  -H "Content-Type: application/json" \
+  -d '{"nom_complet": "M. Cloud Test", "type_simulation": "normal"}'
+
+# Audit a beneficiary (Render)
+curl -X GET "https://cnr-soa.onrender.com/beneficiaires/1/audit"
+
+# Health (Render)
+curl https://cnr-soa.onrender.com/health
+
+# État Civil verify (Render)
+curl https://etat-civil-soa.onrender.com/verify/25-16-12345-00
+
+# CNAS employment (Render)
+curl https://cnas-soa.onrender.com/employment/25-16-12345-99
+```
+
+---
+
 ## 🧪 Guide de Test (Scénarios SOA)
 
 Le système utilise un générateur de NSS intelligent pour simuler des cas réels et démontrer l'orchestration SOA.
@@ -377,6 +477,7 @@ docker-compose ps
 
 **Tester chaque service individuellement :**
 
+#### 🖥️ Local (Docker Compose)
 ```bash
 # Service CNR
 curl http://localhost:8000/health
@@ -387,6 +488,20 @@ curl http://localhost:8001/verify/25-16-12345-00
 
 # Service CNAS (isolé)
 curl http://localhost:8002/employment/25-16-12345-99
+# Réponse: {"nss":"25-16-12345-99","employe_actif":true,...}
+```
+
+#### ☁️ Cloud (Render)
+```bash
+# Service CNR
+curl https://cnr-soa.onrender.com/health
+
+# Service État Civil (isolé)
+curl https://etat-civil-soa.onrender.com/verify/25-16-12345-00
+# Réponse: {"nss":"25-16-12345-00","en_vie":false,...}
+
+# Service CNAS (isolé)
+curl https://cnas-soa.onrender.com/employment/25-16-12345-99
 # Réponse: {"nss":"25-16-12345-99","employe_actif":true,...}
 ```
 
@@ -783,6 +898,4 @@ Ce projet est sous licence **MIT** - voir le fichier [LICENSE](LICENSE) pour plu
 - [Docker Documentation](https://docs.docker.com/)
 - [PostgreSQL Guide](https://www.postgresql.org/docs/)
 - [Loi 83-12 (Texte Intégral)](https://www.joradp.dz/)
-
----
 

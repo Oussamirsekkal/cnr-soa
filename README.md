@@ -256,7 +256,7 @@ Kubernetes Cluster
 ├── cnas-service (2 replicas)         # Owned by MTESS
 ├── casnos-service (NEW)              # Travailleurs non-salariés
 ├── api-gateway (Nginx/Kong)          # Entry point
-└── PostgreSQL (Managed DB)           # Azure/AWS RDS
+└── PostgreSQL (Managed DB)           # render cloud
 ```
 
 **Chaque service aurait :**
@@ -312,8 +312,8 @@ def audit_conformite(beneficiaire):
 
 ```bash
 # Cloner le dépôt
-git clone https://github.com/VOTRE-USERNAME/dz-retraite-soa.git
-cd dz-retraite-soa
+git clone https://github.com/Oussamirsekkal/cnr-soa.git
+cd SOA-test
 ```
 
 ### 2️⃣ Lancement de l'Application
@@ -650,58 +650,6 @@ alembic revision --autogenerate -m "Description"
 alembic upgrade head
 ```
 
----
-
-## ☁️ Déploiement Cloud
-
-Ce projet est prêt pour le déploiement ("Cloud Native").
-
-### Option 1 : Railway / Render (Recommandé) 🚂
-
-1. Poussez ce code sur **GitHub**
-2. Connectez votre repo sur [Railway.app](https://railway.app)
-3. Ajoutez une base de données **PostgreSQL** (Service Add-on)
-4. Liez la variable d'environnement `DATABASE_URL` fournie par Railway
-
-**Variables d'environnement requises :**
-```env
-DATABASE_URL=postgresql://user:pass@host:5432/dbname
-PORT=8000
-```
-
-### Option 2 : Azure (Web App for Containers) ☁️
-
-```bash
-# 1. Construire l'image
-docker build -t mon-app-cnr .
-
-# 2. Tag pour Azure Container Registry
-docker tag mon-app-cnr myregistry.azurecr.io/cnr:latest
-
-# 3. Pousser vers ACR
-docker push myregistry.azurecr.io/cnr:latest
-
-# 4. Créer une Web App
-az webapp create \
-  --resource-group mon-rg \
-  --plan mon-plan \
-  --name cnr-app \
-  --deployment-container-image-name myregistry.azurecr.io/cnr:latest
-```
-
-### Option 3 : Docker Hub + VPS 🐳
-
-```bash
-# 1. Build et push
-docker build -t votre-username/cnr-app .
-docker push votre-username/cnr-app
-
-# 2. Sur votre VPS
-docker pull votre-username/cnr-app
-docker run -d -p 80:8000 \
-  -e DATABASE_URL=postgresql://... \
-  votre-username/cnr-app
-```
 
 ---
 
@@ -824,31 +772,10 @@ Les contributions sont les bienvenues ! Voici comment contribuer :
 
 Ce projet est sous licence **MIT** - voir le fichier [LICENSE](LICENSE) pour plus de détails.
 
----
 
-## 👥 Auteurs
 
-- **Votre Nom** - *Développeur Principal* - [@votre-github](https://github.com/votre-username)
 
----
 
-## 🙏 Remerciements
-
-- Caisse Nationale des Retraites (CNR) pour l'inspiration
-- Communauté FastAPI pour la documentation excellente
-- Ministère de la Solidarité Nationale pour les références légales
-
----
-
-## 📞 Support
-
-Pour toute question ou problème :
-
-- 📧 Email: votre.email@example.com
-- 🐛 Issues: [GitHub Issues](https://github.com/votre-username/dz-retraite-soa/issues)
-- 💬 Discussions: [GitHub Discussions](https://github.com/votre-username/dz-retraite-soa/discussions)
-
----
 
 ## 🔗 Liens Utiles
 
@@ -859,10 +786,3 @@ Pour toute question ou problème :
 
 ---
 
-<div align="center">
-
-**⭐ Si ce projet vous a aidé, n'hésitez pas à lui donner une étoile sur GitHub ! ⭐**
-
-Made with ❤️ in Algeria 🇩🇿
-
-</div>

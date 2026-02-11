@@ -1,0 +1,85 @@
+services:
+  # ========================================
+  # SERVICE CNR (Core Business)
+  # Port: 8000 (API Gateway / Orchestrateur)
+  # ========================================
+  cnr-api:
+    build: .
+    container_name: cnr-service
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/retraite_db
+      - ETAT_CIVIL_URL=http://etat-civil-api:8001
+      - CNAS_URL=http://cnas-api:8002
+    depends_on:
+      db:
+        condition: service_healthy
+      etat-civil-api:
+        condition: service_started
+      cnas-api:
+        condition: service_started
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./main.py:/app/main.py
+    networks:
+      - soa-network
+
+  # ========================================
+  # SERVICE ÉTAT CIVIL (Service Externe)
+  # Port: 8001
+  # ========================================
+  etat-civil-api:
+    build: .
+    container_name: etat-civil-service
+    ports:
+      - "8001:8001"
+    command: uvicorn service_etat_civil:app --host 0.0.0.0 --port 8001 --reload
+    volumes:
+      - ./service_etat_civil.py:/app/service_etat_civil.py
+    networks:
+      - soa-network
+
+  # ========================================
+  # SERVICE CNAS (Service Externe)
+  # Port: 8002
+  # ========================================
+  cnas-api:
+    build: .
+    container_name: cnas-service
+    ports:
+      - "8002:8002"
+    command: uvicorn service_cnas:app --host 0.0.0.0 --port 8002 --reload
+    volumes:
+      - ./service_cnas.py:/app/service_cnas.py
+    networks:
+      - soa-network
+
+  # ========================================
+  # BASE DE DONNÉES (PostgreSQL)
+  # ========================================
+  db:
+    image: postgres:16-alpine
+    container_name: postgres-cnr
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: retraite_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - soa-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  soa-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

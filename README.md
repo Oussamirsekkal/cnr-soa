@@ -529,7 +529,3 @@ Les contributions sont bienvenues ! N'hésitez pas à ouvrir une issue ou une pu
 ## 📧 Contact
 
 Pour toute question sur ce projet de simulation SOA, veuillez ouvrir une issue sur GitHub.
-
----
-
-**Fait avec ❤️ pour démontrer les principes SOA appliqués à l'administration algérienne**
